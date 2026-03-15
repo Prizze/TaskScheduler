@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Prizze/TaskScheduler/internal/apperrors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -37,7 +38,7 @@ func TestSendResponse(t *testing.T) {
 func TestSendError(t *testing.T) {
 	resp := httptest.NewRecorder()
 
-	err := ErrorResponse{
+	err := apperrors.Response{
 		HTTPStatus: http.StatusBadRequest,
 		Code:       "bad request",
 		Message:    "invalid request data",

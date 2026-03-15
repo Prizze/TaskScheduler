@@ -3,24 +3,18 @@ package response
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/Prizze/TaskScheduler/internal/apperrors"
 )
-
-type Code string
-
-type ErrorResponse struct {
-	HTTPStatus int
-	Code       Code
-	Message    string
-}
 
 type errorResponse struct {
 	Error errorInfo `json:"error"`
 }
 
 type errorInfo struct {
-	Code    Code   `json:"code"`
-	Message string `json:"message"`
-	Details any    `json:"details"`
+	Code    apperrors.Code `json:"code"`
+	Message string         `json:"message"`
+	Details any            `json:"details"`
 }
 
 func SendResponse(w http.ResponseWriter, status int, data any) {
@@ -30,7 +24,7 @@ func SendResponse(w http.ResponseWriter, status int, data any) {
 	_ = json.NewEncoder(w).Encode(data)
 }
 
-func SendError(w http.ResponseWriter, err ErrorResponse, details any) {
+func SendError(w http.ResponseWriter, err apperrors.Response, details any) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(err.HTTPStatus)
 
