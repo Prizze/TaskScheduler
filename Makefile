@@ -13,6 +13,9 @@ build:
 start:
 	./bin
 
+clean:
+	rm bin
+
 # migrations 
 MIGRATIONS_DIR=db/migrations
 

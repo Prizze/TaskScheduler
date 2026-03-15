@@ -37,10 +37,13 @@ func TestSendResponse(t *testing.T) {
 func TestSendError(t *testing.T) {
 	resp := httptest.NewRecorder()
 
-	code := "bad request"
-	message := "invalid request data"
+	err := ErrorResponse{
+		HTTPStatus: http.StatusBadRequest,
+		Code:       "bad request",
+		Message:    "invalid request data",
+	}
 
-	SendError(resp, http.StatusBadRequest, code, message, nil)
+	SendError(resp, err, nil)
 
 	response := errorResponse{}
 
@@ -49,6 +52,6 @@ func TestSendError(t *testing.T) {
 
 	_ = json.NewDecoder(resp.Body).Decode(&response)
 
-	assert.Equal(t, code, response.Error.Code)
-	assert.Equal(t, message, response.Error.Message)
+	assert.Equal(t, err.Code, response.Error.Code)
+	assert.Equal(t, err.Message, response.Error.Message)
 }

@@ -5,12 +5,20 @@ import (
 	"net/http"
 )
 
+type Code string
+
+type ErrorResponse struct {
+	HTTPStatus int
+	Code       Code
+	Message    string
+}
+
 type errorResponse struct {
 	Error errorInfo `json:"error"`
 }
 
 type errorInfo struct {
-	Code    string `json:"code"`
+	Code    Code   `json:"code"`
 	Message string `json:"message"`
 	Details any    `json:"details"`
 }
@@ -22,17 +30,17 @@ func SendResponse(w http.ResponseWriter, status int, data any) {
 	_ = json.NewEncoder(w).Encode(data)
 }
 
-func SendError(w http.ResponseWriter, status int, code string, message string, details any) {
+func SendError(w http.ResponseWriter, err ErrorResponse, details any) {
 	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(status)
+	w.WriteHeader(err.HTTPStatus)
 
-	err := errorResponse{
+	resp := errorResponse{
 		Error: errorInfo{
-			Code:    code,
-			Message: message,
+			Code:    err.Code,
+			Message: err.Message,
 			Details: details,
 		},
 	}
 
-	_ = json.NewEncoder(w).Encode(err)
+	_ = json.NewEncoder(w).Encode(resp)
 }
