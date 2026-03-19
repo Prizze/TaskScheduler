@@ -9,6 +9,7 @@ import (
 	"github.com/Prizze/TaskScheduler/internal/apperrors"
 	"github.com/Prizze/TaskScheduler/internal/auth/domain"
 	"github.com/Prizze/TaskScheduler/internal/config"
+	"github.com/Prizze/TaskScheduler/pkg/ctx"
 	"github.com/Prizze/TaskScheduler/pkg/jwt"
 	"github.com/Prizze/TaskScheduler/pkg/response"
 )
@@ -93,7 +94,19 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
-	
+	userID, ok := r.Context().Value(ctx.UserIDKey).(int64)
+	if !ok {
+		response.SendError(w, apperrors.Unauthorized, nil)
+		return
+	}
+
+	user, err := h.Service.Me(r.Context(), userID)
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+
+	response.SendResponse(w, http.StatusOK, user)
 }
 
 func handleError(w http.ResponseWriter, err error) {

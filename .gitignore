@@ -31,6 +31,9 @@ go.work.sum
 # TZ
 *.odt*
 
+# mocks
+**/mocks
+
 # Editor/IDE
 # .idea/
 # .vscode/
