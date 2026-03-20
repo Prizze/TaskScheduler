@@ -28,7 +28,10 @@ func NewAuthHandler(service authService, cfg *config.Config) *AuthHandler {
 
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var req domain.RegisterRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	if err := decoder.Decode(&req); err != nil {
 		response.SendError(w, apperrors.Validation, nil)
 		return
 	}
@@ -41,19 +44,10 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := jwt.GenerateJWT(user.ID, h.Cfg)
-	if err != nil {
+	if err := setAuthCookie(w, user.ID, h.Cfg); err != nil {
 		handleError(w, err)
 		return
 	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "token",
-		Value:    token,
-		HttpOnly: true,
-		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
-	})
 
 	userDTO := domain.RegisterResponseFromUser(user)
 	response.SendResponse(w, http.StatusCreated, userDTO)
@@ -62,7 +56,10 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req domain.LoginRequest
 
-	err := json.NewDecoder(r.Body).Decode(&req)
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	err := decoder.Decode(&req)
 	if err != nil {
 		response.SendError(w, apperrors.Validation, nil)
 		return
@@ -75,19 +72,10 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := jwt.GenerateJWT(user.ID, h.Cfg)
-	if err != nil {
+	if err := setAuthCookie(w, user.ID, h.Cfg); err != nil {
 		handleError(w, err)
 		return
 	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "token",
-		Value:    token,
-		HttpOnly: true,
-		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
-	})
 
 	userDTO := domain.LoginResponseFromUser(user)
 	response.SendResponse(w, http.StatusOK, userDTO)
@@ -106,13 +94,44 @@ func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.SendResponse(w, http.StatusOK, user)
+	userDTO := domain.RegisterResponseFromUser(user)
+	response.SendResponse(w, http.StatusOK, userDTO)
 }
 
 func handleError(w http.ResponseWriter, err error) {
 	switch {
+	case errors.Is(err, domain.ErrValidation):
+		response.SendError(w, apperrors.Validation, err.Error())
+		return
 	case errors.Is(err, domain.ErrEmailIsTaken):
 		response.SendError(w, apperrors.Conflict, domain.ErrEmailIsTaken.Error())
 		return
+	case errors.Is(err, domain.ErrInvalidCredentials):
+		response.SendError(w, apperrors.Unauthorized, domain.ErrInvalidCredentials.Error())
+		return
+	case errors.Is(err, domain.ErrUserNotFound):
+		response.SendError(w, apperrors.NotFound, domain.ErrUserNotFound.Error())
+		return
+	default:
+		response.SendError(w, apperrors.Internal, nil)
+		return
 	}
+}
+
+func setAuthCookie(w http.ResponseWriter, userID int64, cfg *config.Config) error {
+	token, err := jwt.GenerateJWT(userID, cfg)
+	if err != nil {
+		return err
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		Value:    token,
+		HttpOnly: true,
+		Path:     "/",
+		Expires:  time.Now().Add(24 * time.Hour),
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	return nil
 }

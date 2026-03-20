@@ -23,16 +23,20 @@ func GenerateJWT(userID int64, cfg *config.Config) (string, error) {
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString(cfg.JwtSecret)
+	return token.SignedString([]byte(cfg.JwtSecret))
 }
 
 func ParseJWT(tokenString string, cfg *config.Config) (*Claims, error) {
 	claims := &Claims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return cfg.JwtSecret, nil
+		if token.Method != jwt.SigningMethodHS256 {
+			return nil, errors.New("unexpected signing method")
+		}
+
+		return []byte(cfg.JwtSecret), nil
 	})
 	if err != nil {
 		return nil, err

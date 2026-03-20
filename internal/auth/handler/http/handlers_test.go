@@ -31,7 +31,6 @@ func getUser() *models.User {
 	}
 }
 
-
 func getRequestWithBody(method string, target string, data any) *http.Request {
 	body, _ := json.Marshal(data)
 	req := httptest.NewRequest(method, target, bytes.NewBuffer(body))
@@ -45,19 +44,19 @@ func TestRegister(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockService := mocks.NewMockauthService(ctrl)
-	cfg := &config.Config{}
+	cfg := &config.Config{JwtSecret: "secret"}
 	handler := NewAuthHandler(mockService, cfg)
 
 	t.Run("Register ok", func(t *testing.T) {
 		dto := getRegisterRequest()
-		user := dto.NewUser()
-		req := getRequestWithBody(http.MethodPost, "/register", dto.NewUser())
+		user := getUser()
+		req := getRequestWithBody(http.MethodPost, "/register", dto)
 		rec := httptest.NewRecorder()
 
 		mockService.EXPECT().Register(req.Context(), dto.NewUser()).Return(user, nil)
 
 		handler.Register(rec, req)
-		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, http.StatusCreated, rec.Code)
 	})
 }
 
@@ -66,7 +65,7 @@ func TestLogin(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockService := mocks.NewMockauthService(ctrl)
-	cfg := &config.Config{}
+	cfg := &config.Config{JwtSecret: "secret"}
 	handler := NewAuthHandler(mockService, cfg)
 
 	t.Run("Login ok", func(t *testing.T) {
@@ -78,7 +77,7 @@ func TestLogin(t *testing.T) {
 		req := getRequestWithBody(http.MethodPost, "/login", dto)
 		rec := httptest.NewRecorder()
 
-		mockService.EXPECT().Login(req.Context(), dto.NewUser()).Return(dto.NewUser(), nil)
+		mockService.EXPECT().Login(req.Context(), dto.NewUser()).Return(getUser(), nil)
 
 		handler.Login(rec, req)
 		assert.Equal(t, http.StatusOK, rec.Code)

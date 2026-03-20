@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	authhttp "github.com/Prizze/TaskScheduler/internal/auth/handler/http"
+	"github.com/Prizze/TaskScheduler/internal/auth/repository"
 	"github.com/Prizze/TaskScheduler/internal/auth/service"
 	"github.com/Prizze/TaskScheduler/internal/config"
 	"github.com/Prizze/TaskScheduler/internal/logger"
@@ -17,10 +18,10 @@ type Module struct {
 }
 
 func NewAuthModule(db *pgxpool.Pool, cfg *config.Config, log logger.Logger) *Module {
-	_ = db
 	_ = log
 
-	service := service.NewAuthService()
+	repo := repository.NewRepoAuth(db)
+	service := service.NewAuthService(repo)
 	handler := authhttp.NewAuthHandler(service, cfg)
 
 	return &Module{
