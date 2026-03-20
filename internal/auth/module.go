@@ -18,10 +18,8 @@ type Module struct {
 }
 
 func NewAuthModule(db *pgxpool.Pool, cfg *config.Config, log logger.Logger) *Module {
-	_ = log
-
 	repo := repository.NewRepoAuth(db)
-	service := service.NewAuthService(repo)
+	service := service.NewAuthService(repo, log.With("module", "auth"))
 	handler := authhttp.NewAuthHandler(service, cfg)
 
 	return &Module{
