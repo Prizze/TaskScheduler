@@ -6,6 +6,7 @@ import (
 	"github.com/Prizze/TaskScheduler/internal/models"
 )
 
+//go:generate mockgen -source repository_interface.go -destination=mocks/mock_repo.go -package=mocks
 type repoAuth interface {
 	GetUserByID(ctx context.Context, userID int64) (*models.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)

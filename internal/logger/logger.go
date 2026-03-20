@@ -1,5 +1,6 @@
 package logger
 
+//go:generate mockgen -source logger.go -destination=mocks/mock_logger.go -package=mocks
 type Logger interface {
 	Debug(msg string, args ...any)
 	Info(msg string, args ...any)
