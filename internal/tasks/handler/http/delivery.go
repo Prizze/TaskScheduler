@@ -11,7 +11,8 @@ import (
 )
 
 type TasksHandler struct {
-	cfg *config.Config
+	service taskService
+	cfg     *config.Config
 }
 
 func NewTasksHander(cfg *config.Config) *TasksHandler {
@@ -24,9 +25,18 @@ func (h *TasksHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		response.SendError(w, apperrors.Validation, nil)
+		return
 	}
 
-	
+	task, tags := req.NewTask()
+	taskWithTags, err := h.service.CreateTask(r.Context(), task, tags)
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+
+	resp := taskWithTags.NewTaskResponse()
+	response.SendResponse(w, http.StatusCreated, resp)
 }
 
 func (h *TasksHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +51,10 @@ func (h *TasksHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 
 }
 
-
 func (h *TasksHandler) DeleteTask(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func handleError(w http.ResponseWriter, err error) {
 
 }

@@ -17,14 +17,15 @@ const StatusInProgress = "in_progress"
 const StatusDone = "done"
 
 type Task struct {
-	ID         int64
-	UserID     int64
-	Title      string
-	StatusID   int
-	Status     Status
-	PriorityID int
-	Priority   Priority
-	DueDate    time.Time
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	ID          int64
+	UserID      int64
+	Title       string
+	Description string
+	StatusID    int
+	Status      Status
+	PriorityID  int
+	Priority    Priority
+	DueDate     time.Time
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }

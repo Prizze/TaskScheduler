@@ -12,11 +12,52 @@ type CreateTaskRequest struct {
 	Status      string    `json:"status"`
 	Priority    string    `json:"priority"`
 	DueDate     time.Time `json:"due_date"`
-	TagIDs      []int     `json:"tag_ids"`
+	TagIDs      []int64   `json:"tag_ids"`
 }
 
-func (req *CreateTaskRequest) NewTask() *models.Task {
-	
+func (req *CreateTaskRequest) NewTask() (*models.Task, []*models.Tag) {
+	tags := make([]*models.Tag, len(req.TagIDs))
+	for i, id := range req.TagIDs {
+		tag := &models.Tag{
+			ID: id,
+		}
+		tags[i] = tag
+	}
+
+	return &models.Task{
+		Title:       req.Title,
+		Description: req.Description,
+		DueDate:     req.DueDate,
+	}, tags
+}
+
+type CreateTaskWithTags struct {
+	Task      *models.Task
+	Tags      []*models.Tag
+	IsOverdue bool
+}
+
+func (res *CreateTaskWithTags) NewTaskResponse() *TaskResponse {
+	tags := make([]Tag, len(res.Tags))
+	for i, tag := range res.Tags {
+		tags[i] = Tag{
+			ID:   tag.ID,
+			Name: tag.Name,
+		}
+	}
+
+	return &TaskResponse{
+		ID:          res.Task.ID,
+		Title:       res.Task.Title,
+		Description: res.Task.Description,
+		Status:      res.Task.Status,
+		Priority:    res.Task.Priority,
+		DueDate:     res.Task.DueDate,
+		CreatedAt:   res.Task.CreatedAt,
+		UpdatedAt:   res.Task.CreatedAt,
+		IsOverdue:   res.IsOverdue,
+		Tags:        tags,
+	}
 }
 
 type TaskResponse struct {
@@ -33,7 +74,7 @@ type TaskResponse struct {
 }
 
 type Tag struct {
-	ID   int    `json:"id"`
+	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
 
