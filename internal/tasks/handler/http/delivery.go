@@ -7,6 +7,7 @@ import (
 	"github.com/Prizze/TaskScheduler/internal/apperrors"
 	"github.com/Prizze/TaskScheduler/internal/config"
 	"github.com/Prizze/TaskScheduler/internal/tasks/domain"
+	"github.com/Prizze/TaskScheduler/pkg/ctx"
 	"github.com/Prizze/TaskScheduler/pkg/response"
 )
 
@@ -20,6 +21,12 @@ func NewTasksHander(cfg *config.Config) *TasksHandler {
 }
 
 func (h *TasksHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(ctx.UserIDKey).(int64)
+	if !ok {
+		response.SendError(w, apperrors.Unauthorized, nil)
+		return
+	}
+
 	var req domain.CreateTaskRequest
 
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -28,8 +35,8 @@ func (h *TasksHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	task, tags := req.NewTask()
-	taskWithTags, err := h.service.CreateTask(r.Context(), task, tags)
+	createTask := req.NewTask()
+	taskWithTags, err := h.service.CreateTask(r.Context(), userID, createTask)
 	if err != nil {
 		handleError(w, err)
 		return

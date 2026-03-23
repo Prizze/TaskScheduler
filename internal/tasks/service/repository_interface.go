@@ -1,4 +1,4 @@
-package http
+package service
 
 import (
 	"context"
@@ -6,6 +6,6 @@ import (
 	"github.com/Prizze/TaskScheduler/internal/tasks/domain"
 )
 
-type taskService interface {
+type tasksRepository interface {
 	CreateTask(ctx context.Context, userID int64, in *domain.CreateTask) (*domain.CreateTaskWithTags, error)
 }

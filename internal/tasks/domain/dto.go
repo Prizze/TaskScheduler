@@ -6,6 +6,7 @@ import (
 	"github.com/Prizze/TaskScheduler/internal/models"
 )
 
+// Запрос на создание задачи
 type CreateTaskRequest struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
@@ -15,7 +16,7 @@ type CreateTaskRequest struct {
 	TagIDs      []int64   `json:"tag_ids"`
 }
 
-func (req *CreateTaskRequest) NewTask() (*models.Task, []*models.Tag) {
+func (req *CreateTaskRequest) NewTask() *CreateTask {
 	tags := make([]*models.Tag, len(req.TagIDs))
 	for i, id := range req.TagIDs {
 		tag := &models.Tag{
@@ -23,14 +24,26 @@ func (req *CreateTaskRequest) NewTask() (*models.Task, []*models.Tag) {
 		}
 		tags[i] = tag
 	}
-
-	return &models.Task{
+	task := &models.Task{
 		Title:       req.Title,
 		Description: req.Description,
+		Status:      models.Status(req.Status),
+		Priority:    models.Priority(req.Priority),
 		DueDate:     req.DueDate,
-	}, tags
+	}
+	return &CreateTask{
+		Task: task,
+		Tags: tags,
+	}
 }
 
+type CreateTask struct {
+	UserID int64
+	Task   *models.Task
+	Tags   []*models.Tag
+}
+
+// Созданная задача с тегами
 type CreateTaskWithTags struct {
 	Task      *models.Task
 	Tags      []*models.Tag
