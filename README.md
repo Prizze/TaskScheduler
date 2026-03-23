@@ -2,7 +2,7 @@
 
 REST API для управления пользователями, задачами и тегами.
 
-Деплой - TODO
+**Деплой - TODO**
 
 ## Возможности
 
@@ -19,14 +19,18 @@ REST API для управления пользователями, задача�
 ```bash
 export DB_URL='postgres://postgres:postgres@localhost:5432/taskscheduler?sslmode=disable'
 export JWT_SECRET='super-secret'
+
+ИЛИ
+
+Указать их в .env
 ```
 
 После этого приложение можно запустить так:
 
 ```bash
-docker-composr up --build
+docker-compose up --build
 ```
-Порт HTTP-сервера берется из [internal/config/config.yaml](/home/smag/Study/Pet/TaskScheduler/internal/config/config.yaml).
+Порт HTTP-сервера берется из [internal/config/config.yaml](internal/config/config.yaml).
 
 ## API
 
