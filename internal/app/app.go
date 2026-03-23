@@ -10,6 +10,7 @@ import (
 	"github.com/Prizze/TaskScheduler/internal/db"
 	"github.com/Prizze/TaskScheduler/internal/logger"
 	"github.com/Prizze/TaskScheduler/internal/middleware"
+	"github.com/Prizze/TaskScheduler/internal/tags"
 	"github.com/Prizze/TaskScheduler/internal/tasks"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -28,13 +29,14 @@ func NewApp(cfg *config.Config) (*App, error) {
 		return nil, err
 	}
 
-	// Регистрируем auth сервис
 	authModule := auth.NewAuthModule(dbPool, cfg, logger)
 	authModule.RegisterRoutes(mux)
 
-	// Регистрируем tasks сервис
 	tasksModule := tasks.NewTasksModule(cfg, dbPool, logger)
 	tasksModule.RegisterRoutes(mux)
+
+	tagsModule := tags.NewTagsModule(cfg, dbPool, logger)
+	tagsModule.RegisterRoutes(mux)
 
 	return &App{
 		server: &http.Server{
@@ -43,6 +45,10 @@ func NewApp(cfg *config.Config) (*App, error) {
 		},
 		dbPool: dbPool,
 	}, nil
+}
+
+func (a *App) Run() error {
+	return a.server.ListenAndServe()
 }
 
 func (a *App) Close() {
