@@ -1,5 +1,7 @@
 package http
 
+//go:generate mockgen -source service_interface.go -destination=mocks/mock_service.go -package=mocks
+
 import (
 	"context"
 
