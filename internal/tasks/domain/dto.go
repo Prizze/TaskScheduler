@@ -37,20 +37,51 @@ func (req *CreateTaskRequest) NewTask() *CreateTask {
 	}
 }
 
+type UpdateTaskRequest struct {
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Status      string    `json:"status"`
+	Priority    string    `json:"priority"`
+	DueDate     time.Time `json:"due_date"`
+	TagIDs      []int64   `json:"tag_ids"`
+}
+
+func (req *UpdateTaskRequest) NewTask() *UpdateTask {
+	tags := make([]*models.Tag, len(req.TagIDs))
+	for i, id := range req.TagIDs {
+		tags[i] = &models.Tag{ID: id}
+	}
+
+	return &UpdateTask{
+		Task: &models.Task{
+			Title:       req.Title,
+			Description: req.Description,
+			Status:      models.Status(req.Status),
+			Priority:    models.Priority(req.Priority),
+			DueDate:     req.DueDate,
+		},
+		Tags: tags,
+	}
+}
+
 type CreateTask struct {
 	UserID int64
 	Task   *models.Task
 	Tags   []*models.Tag
 }
 
-// Созданная задача с тегами
-type CreateTaskWithTags struct {
+type UpdateTask struct {
+	Task *models.Task
+	Tags []*models.Tag
+}
+
+type TaskWithTags struct {
 	Task      *models.Task
 	Tags      []*models.Tag
 	IsOverdue bool
 }
 
-func (res *CreateTaskWithTags) NewTaskResponse() *TaskResponse {
+func (res *TaskWithTags) NewTaskResponse() *TaskResponse {
 	tags := make([]Tag, len(res.Tags))
 	for i, tag := range res.Tags {
 		tags[i] = Tag{
@@ -67,7 +98,7 @@ func (res *CreateTaskWithTags) NewTaskResponse() *TaskResponse {
 		Priority:    res.Task.Priority,
 		DueDate:     res.Task.DueDate,
 		CreatedAt:   res.Task.CreatedAt,
-		UpdatedAt:   res.Task.CreatedAt,
+		UpdatedAt:   res.Task.UpdatedAt,
 		IsOverdue:   res.IsOverdue,
 		Tags:        tags,
 	}
