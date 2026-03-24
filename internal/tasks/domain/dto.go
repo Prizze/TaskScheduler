@@ -125,3 +125,12 @@ type Tag struct {
 type TasksResponse struct {
 	Tasks []TaskResponse `json:"tasks"`
 }
+
+func TasksResponseFromModels(items []*TaskWithTags) *TasksResponse {
+	tasks := make([]TaskResponse, len(items))
+	for i, item := range items {
+		tasks[i] = *item.NewTaskResponse()
+	}
+
+	return &TasksResponse{Tasks: tasks}
+}

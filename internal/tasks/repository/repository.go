@@ -71,6 +71,35 @@ func (r *TasksRepository) CreateTask(ctx context.Context, userID int64, in *doma
 	return &domain.TaskWithTags{Task: task, Tags: tags}, nil
 }
 
+func (r *TasksRepository) GetTasks(ctx context.Context, userID int64) ([]*domain.TaskWithTags, error) {
+	rows, err := r.pool.Query(ctx, getTasks, userID)
+	if err != nil {
+		return nil, domain.ErrServerError
+	}
+	defer rows.Close()
+
+	var tasks []*domain.TaskWithTags
+	for rows.Next() {
+		task, scanErr := scanTaskRow(rows)
+		if scanErr != nil {
+			return nil, scanErr
+		}
+
+		tags, tagsErr := r.fetchTaskTags(ctx, task.ID)
+		if tagsErr != nil {
+			return nil, tagsErr
+		}
+
+		tasks = append(tasks, &domain.TaskWithTags{Task: task, Tags: tags})
+	}
+
+	if rows.Err() != nil {
+		return nil, domain.ErrServerError
+	}
+
+	return tasks, nil
+}
+
 func (r *TasksRepository) GetTask(ctx context.Context, userID, taskID int64) (*domain.TaskWithTags, error) {
 	task, err := scanTaskRow(r.pool.QueryRow(ctx, getTaskByID, taskID, userID))
 	if err != nil {

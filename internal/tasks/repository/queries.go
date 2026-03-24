@@ -37,6 +37,27 @@ const (
 		WHERE t.id = $1 AND t.user_id = $2;
 	`
 
+	getTasks = `
+		SELECT
+			t.id,
+			t.user_id,
+			t.title,
+			t.description,
+			ts.name,
+			tp.name,
+			t.due_date,
+			t.created_at,
+			t.updated_at
+		FROM tasks t
+		JOIN task_status ts ON ts.id = t.status_id
+		JOIN task_priority tp ON tp.id = t.priority_id
+		WHERE t.user_id = $1
+		ORDER BY
+			CASE WHEN t.due_date IS NULL THEN 1 ELSE 0 END,
+			t.due_date ASC,
+			t.created_at DESC;
+	`
+
 	getTaskTags = `
 		SELECT tg.id, tg.name
 		FROM task_tags tt

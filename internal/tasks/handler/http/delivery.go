@@ -51,7 +51,19 @@ func (h *TasksHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TasksHandler) GetTasks(w http.ResponseWriter, r *http.Request) {
-	response.SendError(w, apperrors.NotFound, nil)
+	userID, ok := userIDFromContext(r)
+	if !ok {
+		response.SendError(w, apperrors.Unauthorized, nil)
+		return
+	}
+
+	tasks, err := h.service.GetTasks(r.Context(), userID)
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+
+	response.SendResponse(w, http.StatusOK, domain.TasksResponseFromModels(tasks))
 }
 
 func (h *TasksHandler) GetTask(w http.ResponseWriter, r *http.Request) {

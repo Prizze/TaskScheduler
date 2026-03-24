@@ -32,6 +32,7 @@ func NewTasksModule(cfg *config.Config, db *pgxpool.Pool, log logger.Logger) *Mo
 
 func (m *Module) RegisterRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /tasks", middleware.AuthHandler(m.cfg, http.HandlerFunc(m.handler.CreateTask)))
+	mux.Handle("GET /tasks", middleware.AuthHandler(m.cfg, http.HandlerFunc(m.handler.GetTasks)))
 	mux.Handle("GET /tasks/{id}", middleware.AuthHandler(m.cfg, http.HandlerFunc(m.handler.GetTask)))
 	mux.Handle("PUT /tasks/{id}", middleware.AuthHandler(m.cfg, http.HandlerFunc(m.handler.UpdateTask)))
 	mux.Handle("DELETE /tasks/{id}", middleware.AuthHandler(m.cfg, http.HandlerFunc(m.handler.DeleteTask)))

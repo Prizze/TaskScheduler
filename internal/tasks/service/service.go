@@ -33,6 +33,19 @@ func (s *TasksService) CreateTask(ctx context.Context, userID int64, input *doma
 	return enrichTask(createdTask), nil
 }
 
+func (s *TasksService) GetTasks(ctx context.Context, userID int64) ([]*domain.TaskWithTags, error) {
+	tasks, err := s.repo.GetTasks(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, task := range tasks {
+		enrichTask(task)
+	}
+
+	return tasks, nil
+}
+
 func (s *TasksService) GetTask(ctx context.Context, userID, taskID int64) (*domain.TaskWithTags, error) {
 	task, err := s.repo.GetTask(ctx, userID, taskID)
 	if err != nil {
