@@ -21,7 +21,7 @@ type App struct {
 }
 
 func NewApp(cfg *config.Config) (*App, error) {
-	mux := http.NewServeMux()
+	apiMux := http.NewServeMux()
 
 	logger := logger.NewSlogJSONLogger(os.Stdout, nil)
 	dbPool, err := db.NewPostgresPool(context.Background(), cfg)
@@ -30,18 +30,22 @@ func NewApp(cfg *config.Config) (*App, error) {
 	}
 
 	authModule := auth.NewAuthModule(dbPool, cfg, logger)
-	authModule.RegisterRoutes(mux)
+	authModule.RegisterRoutes(apiMux)
 
 	tasksModule := tasks.NewTasksModule(cfg, dbPool, logger)
-	tasksModule.RegisterRoutes(mux)
+	tasksModule.RegisterRoutes(apiMux)
 
 	tagsModule := tags.NewTagsModule(cfg, dbPool, logger)
-	tagsModule.RegisterRoutes(mux)
+	tagsModule.RegisterRoutes(apiMux)
+
+	rootMux := http.NewServeMux()
+	rootMux.Handle("/api/", http.StripPrefix("/api", apiMux))
+	rootMux.Handle("/api", http.RedirectHandler("/api/", http.StatusPermanentRedirect))
 
 	return &App{
 		server: &http.Server{
 			Addr:    cfg.HTTPAddr,
-			Handler: middleware.Recovery(logger.With("layer", "http"), mux),
+			Handler: middleware.Recovery(logger.With("layer", "http"), rootMux),
 		},
 		dbPool: dbPool,
 	}, nil

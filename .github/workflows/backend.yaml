@@ -1,4 +1,4 @@
-name: Backend CI
+name: Backend CI/CD
 
 on:
   push:
@@ -10,6 +10,9 @@ on:
       - go.sum
       - Makefile
       - .golangci.yml
+      - Dockerfile
+      - docker-compose.yml
+      - nginx/nginx.conf
       - .github/workflows/backend.yaml
   pull_request:
     branches:
@@ -20,13 +23,16 @@ on:
       - go.sum
       - Makefile
       - .golangci.yml
+      - Dockerfile
+      - docker-compose.yml
+      - nginx/nginx.conf
       - .github/workflows/backend.yaml
 
 permissions:
   contents: read
 
 concurrency:
-  group: backend-ci-${{ github.workflow }}-${{ github.ref }}
+  group: backend-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -76,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy VPS
+      - name: Deploy backend on VPS
         uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -86,4 +92,32 @@ jobs:
             set -e
             cd /home/Backend/TaskScheduler
             git pull origin main
-            docker-compose up -d --build
+            docker compose up -d --build
+
+  deploy-nginx:
+    name: Deploy nginx config
+    needs: ci
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Upload nginx config to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          source: "nginx/nginx.conf"
+          target: "/tmp/task-scheduler-nginx"
+
+      - name: Install nginx config on VPS
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
+          script: |
+            set -e
+            sudo cp /tmp/task-scheduler-nginx/nginx/nginx.conf /etc/nginx/conf.d/task-scheduler.conf
+            sudo nginx -t
+            sudo systemctl reload nginx
