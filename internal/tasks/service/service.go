@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/Prizze/TaskScheduler/internal/config"
 	"github.com/Prizze/TaskScheduler/internal/models"
@@ -108,5 +109,5 @@ func isTaskOverdue(task *models.Task) bool {
 		return false
 	}
 
-	return true
+	return !task.DueDate.After(time.Now())
 }

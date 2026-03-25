@@ -30,7 +30,22 @@ export JWT_SECRET='super-secret'
 ```bash
 docker-compose up --build
 ```
+
 Порт HTTP-сервера берется из [internal/config/config.yaml](internal/config/config.yaml).
+
+## Линтер
+
+В backend добавлен `golangci-lint` с конфигом в `.golangci.yml`.
+
+Запуск:
+
+```bash
+make lint
+```
+
+Если `golangci-lint` еще не установлен, поставьте его по инструкции из официального репозитория:
+
+`https://github.com/golangci/golangci-lint`
 
 ## API
 
@@ -52,6 +67,3 @@ docker-compose up --build
 - `POST /tags` - создать тег
 - `GET /tags` - получить список тегов пользователя
 - `DELETE /tags/{id}` - удалить тег пользователя по `id`
-
-
-
