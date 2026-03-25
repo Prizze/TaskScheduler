@@ -1,4 +1,4 @@
-include .env
+-include .env
 export
 
 # Сборка и запуск
@@ -16,11 +16,14 @@ start:
 clean:
 	rm bin
 
+lint:
+	golangci-lint run ./...
+
 # migrations 
 MIGRATIONS_DIR=db/migrations
 
 migrate-up:
-	migrate -path $(MIGRATIONS_DIR) -database "%(DB_URL)" up
+	migrate -path $(MIGRATIONS_DIR) -database "$(DB_URL)" up
 
 migrate-down:
 	migrate -path $(MIGRATIONS_DIR) -database "$(DB_URL)" down 1
