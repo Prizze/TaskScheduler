@@ -33,19 +33,6 @@ docker-compose up --build
 
 Порт HTTP-сервера берется из [internal/config/config.yaml](internal/config/config.yaml).
 
-## Линтер
-
-В backend добавлен `golangci-lint` с конфигом в `.golangci.yml`.
-
-Запуск:
-
-```bash
-make lint
-```
-
-Если `golangci-lint` еще не установлен, поставьте его по инструкции из официального репозитория:
-
-`https://github.com/golangci/golangci-lint`
 
 ## API
 
