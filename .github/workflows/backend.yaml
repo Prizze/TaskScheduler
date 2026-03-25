@@ -95,7 +95,9 @@ jobs:
             git pull origin main
             docker compose up -d --build
 
+            sudo rm -rf /etc/nginx/conf.d/taskscheduler.conf
             sudo cp nginx/nginx.conf /tmp/taskscheduler.conf
             sudo mv /tmp/taskscheduler.conf /etc/nginx/conf.d/taskscheduler.conf
+            
             sudo nginx -t
             sudo systemctl reload nginx
